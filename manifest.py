@@ -43,22 +43,20 @@ def generate_json(args, file=None):
     for entry in json_data["conditions"]:
         present_conditions.append(entry["type"])
     if 0 not in present_conditions:
-        # generate UUID5 from vendor dns
-        vendorID = uuid.uuid5(uuid.NAMESPACE_DNS, "test.com")
+        # If there is no vendor ID currently, make one
+        vendorID = uuid.uuid5(uuid.NAMESPACE_DNS, args["v"])
         json_data["conditions"].append({"type":0,"UUID":str(vendorID)})
     elif 0 in present_conditions:
-        # Convert it to UUID so that it can be used as namespace for other UUIDs
+        # Convert string to UUID so that it can be used as namespace for other UUIDs
         vendorID = uuid.UUID(json_data["conditions"][0]["UUID"])
 
     if 1 not in present_conditions:
-        # generate UUID5 from vendorID, get from previous or manifest
         classID = uuid.uuid5(vendorID, args["c"])
         json_data["conditions"].append({"type":1,"UUID":str(classID)})
     elif 1 in present_conditions:
         classID = uuid.UUID(json_data["conditions"][1]["UUID"])
-
+        
     if 2 not in present_conditions and args["d"] is not None:
-        # generate UUID5 from classID
         deviceID = uuid.uuid5(classID, args["d"])
         json_data["conditions"].append({"type":2,"UUID":str(deviceID)})
 
@@ -77,6 +75,7 @@ def validate_input(args):
     elif args["f"] is not None and pathlib.Path(args["f"]).suffix != ".json":
         print("Manifest must be a JSON file.")
         sys.exit(1)
+
     if args["i"] is None:
         print("Image file is needed.")
         sys.exit(1)
@@ -91,14 +90,58 @@ def validate_input(args):
         if args["c"] is None:
             print("Class identifier is needed for class ID.")
             sys.exit(1)
+        if args["m"] is None:
+            print("Manifest version is needed")
+            sys.exit(1)
 
     if args["u"] is None:
         print("URI for the image is needed.")
         sys.exit(1)
 
-    if args["m"] is None:
-        print("Manifest version is needed")
-        sys.exit(1)
+def validate_manifest(filepath):
+    with open(filepath, "r") as f:
+        try:
+            data = json.load(f)
+        except json.decoder.JSONDecodeError:
+            print("Manifest contains malformed JSON.")
+            sys.exit(1)
+
+        try:
+            data["versionID"]
+        except KeyError:
+            print("Manifest is missing manifest version.")
+            sys.exit(1)
+
+        try:
+            data["conditions"]
+        except KeyError:
+            print("Manifest is missing vendor and class IDs.")
+            sys.exit(1)
+
+        conditions = data["conditions"]
+        present_types = []
+        for condition in conditions:
+            present_types.append(condition["type"])
+
+        if 0 not in present_types:
+            print("Manifest is missing vendor ID.")
+            sys.exit(1)
+        elif 0 in present_types:
+            try:
+                uuid.UUID(data["conditions"][0]["UUID"])
+            except ValueError:
+                print("Manifest is missing vendor ID.")
+                sys.exit(1)
+
+        if 1 not in present_types:
+            print("Manifest is missing class ID.")
+            sys.exit(1)
+        elif 1 in present_types:
+            try:
+                uuid.UUID(data["conditions"][1]["UUID"])
+            except ValueError:
+                print("Manifest is missing class ID.")
+                sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -113,7 +156,9 @@ if __name__ == "__main__":
     parser.add_argument("-u", metavar="URI", type=str)
     args = vars(parser.parse_args())
     
-    validate_input(args)    
+    validate_input(args)
+    if args["f"] is not None:
+        validate_manifest(args["f"])
 
     json_data = generate_json(args, file=args["f"])
     cbor_data = cbor.dumps(json_data)
