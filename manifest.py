@@ -23,10 +23,10 @@ def generate_json(args, file=None):
             f = json.load(f)
             # Assume the version of manifest is the same since user wants to build upon manifest
             json_data["versionID"] = f["versionID"]
-            json_data["conditions"] = []
+            conditions = []
             # Copy existing conditions as the manifest targets same device
             for entry in f["conditions"]:
-                json_data["conditions"].append(entry)
+                conditions.append(entry)
     
     if json_data["versionID"] is None:
         json_data["versionID"] = args["m"]
@@ -38,6 +38,7 @@ def generate_json(args, file=None):
     json_data["format"] = get_format(args["i"])
     json_data["size"] = os.path.getsize(args["i"])
 
+    json_data["conditions"] = conditions
     present_conditions = []
     for entry in json_data["conditions"]:
         present_conditions.append(entry["type"])
