@@ -25,7 +25,7 @@ def generate_json(args, file=None):
             json_data["versionID"] = f["versionID"]
             json_data["conditions"] = []
             # Copy existing conditions as the manifest targets same device
-            for entry in ["conditions"]:
+            for entry in f["conditions"]:
                 json_data["conditions"].append(entry)
     
     if json_data["versionID"] is None:
@@ -46,14 +46,15 @@ def generate_json(args, file=None):
         vendorID = uuid.uuid5(uuid.NAMESPACE_DNS, "test.com")
         json_data["conditions"].append({"type":0,"UUID":vendorID})
     elif 0 in present_conditions:
-        vendorID = json_data["conditions"][0]["UUID"]
+        # Convert it to UUID so that it can be used as namespace for other UUIDs
+        vendorID = uuid.UUID(json_data["conditions"][0]["UUID"])
 
     if 1 not in present_conditions:
         # generate UUID5 from vendorID, get from previous or manifest
         classID = uuid.uuid5(vendorID, "class1")
         json_data["conditions"].append({"type":1,"UUID":classID})
     elif 1 in present_conditions:
-        classID = json_data["conditions"][1]["UUID"]
+        classID = uuid.UUID(json_data["conditions"][1]["UUID"])
 
     if 2 not in present_conditions and args["d"] is not None:
         # generate UUID5 from classID
@@ -61,7 +62,10 @@ def generate_json(args, file=None):
         json_data["conditions"].append({"type":2,"UUID":deviceID})
 
     json_data["digests"] = []
-    json_data["digests"].append({"URI":args["u"],"digest":hashlib.sha256(args["i"])})
+    with open(args["i"], "rb") as f:
+        data = f.read()
+        image_digest = hashlib.sha256(data).hexdigest()
+    json_data["digests"].append({"URI":args["u"],"digest":image_digest})
     
     return json_data
 
@@ -91,11 +95,12 @@ if __name__ == "__main__":
     json_data = generate_json(args, file=args["f"])
     cbor_data = cbor.dumps(json_data)
 
-    outfile = args["outfile"]
-    if ".cbor" not in outfile:
-        outfile = outfile + ".cbor"
-    print(outfile)
-    with open(outfile, "wb") as file:
+    outfile = pathlib.Path(args["outfile"]).stem
+    with open(outfile + ".json", "w") as file:
+        json.dump(json_data, file)
+        print("Wrote JSON manifest to {}.json.".format(outfile))
+    with open(outfile + ".cbor", "wb") as file:
         file.write(cbor_data)
+        print("Wrote CBOR manifest to {}.cbor.".format(outfile))
 
     
