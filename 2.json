@@ -1,0 +1,1 @@
+{"versionID":1 , "sequenceNumber": "1549275978", "format": 1, "size": 184380, "conditions": [ {"type": 1, "UUID": "3b590ef2-f8c5-54e3-ab1a-e0c5574e5261"}, {"type": 2, "UUID": "20797392-f5b1-533f-abd7-33c7533d1295"}], "digests": [{"URI": "coap://fake-uri/image", "digest": "ac526296b4f53eed4ab337f158afc12755bd046d0982b4fa227ee09897bc32ef"}]}
