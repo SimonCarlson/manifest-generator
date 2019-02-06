@@ -53,12 +53,6 @@ def generate_json(args, file=None):
     if 1 not in present_conditions:
         classID = uuid.uuid5(vendorID, args["c"])
         json_data["conditions"].append({"type":1,"UUID":str(classID)})
-    elif 1 in present_conditions:
-        classID = uuid.UUID(json_data["conditions"][1]["UUID"])
-        
-    if 2 not in present_conditions and args["d"] is not None:
-        deviceID = uuid.uuid5(classID, args["d"])
-        json_data["conditions"].append({"type":2,"UUID":str(deviceID)})
 
     json_data["digests"] = []
     with open(args["i"], "rb") as f:
@@ -152,7 +146,6 @@ if __name__ == "__main__":
     parser.add_argument("-i", metavar="image file", type=str)
     parser.add_argument("-v", metavar="vendor", type=str)
     parser.add_argument("-c", metavar="class", type=str)
-    parser.add_argument("-d", metavar="device", type=str)
     parser.add_argument("-u", metavar="URI", type=str)
     args = vars(parser.parse_args())
     
@@ -170,5 +163,3 @@ if __name__ == "__main__":
     with open(outfile + ".cbor", "wb") as file:
         file.write(cbor_data)
         print("Wrote CBOR manifest to {}.cbor.".format(outfile))
-
-    
