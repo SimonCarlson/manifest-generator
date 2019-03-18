@@ -17,10 +17,10 @@
         "format": 0,
         "size": 512,
         "storage": 0,
-        "URLdigest": {
+        "URLdigest": [{
             "URL": "coaps://fake-url",
             "digest": "6b6bf0bce018a46a263151f7f662c2f94125f39ba68b48160ee222853201a863"
-        }
+        }]
     },
     "precursorImage": {},
     "dependencies": {},

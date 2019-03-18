@@ -18,15 +18,15 @@ def get_format(image_path):
 
 def generate_json(args, file=None):
     json_data = {}
-    conditions = []
+    preConditions = []
     if file is not None:
         with open(file, "r") as f:
             f = json.load(f)
             # Assume the version of manifest is the same since user wants to build upon manifest
             json_data["versionID"] = f["versionID"]
-            # Copy existing conditions as the manifest targets same device
-            for entry in f["conditions"]:
-                conditions.append(entry)
+            # Copy existing preConditions as the manifest targets same device
+            for entry in f["preConditions"]:
+                preConditions.append(entry)
     
     if file is None:
         json_data["versionID"] = args["m"]
@@ -35,39 +35,37 @@ def generate_json(args, file=None):
     timestamp = str(timestamp).split(".")[0]
     json_data["sequenceNumber"] = timestamp
 
-    json_data["format"] = get_format(args["i"])
-    json_data["size"] = os.path.getsize(args["i"])
-
-    json_data["conditions"] = conditions
-    present_conditions = []
-    for entry in json_data["conditions"]:
-        present_conditions.append(entry["type"])
-    if 0 not in present_conditions:
+    json_data["preConditions"] = preConditions
+    present_preconditions = []
+    for entry in json_data["preConditions"]:
+        present_preconditions.append(entry["type"])
+    if 0 not in present_preconditions:
         # If there is no vendor ID currently, make one
         vendorID = uuid.uuid5(uuid.NAMESPACE_DNS, args["v"])
-        json_data["conditions"].append({"type":0,"UUID":str(vendorID)})
-    elif 0 in present_conditions:
+        json_data["preConditions"].append({"type":0,"UUID":str(vendorID)})
+    elif 0 in present_preconditions:
         # Convert string to UUID so that it can be used as namespace for other UUIDs
-        vendorID = uuid.UUID(json_data["conditions"][0]["UUID"])
+        vendorID = uuid.UUID(json_data["preConditions"][0]["UUID"])
 
-    if 1 not in present_conditions:
+    if 1 not in present_preconditions:
         classID = uuid.uuid5(vendorID, args["c"])
-        json_data["conditions"].append({"type":1,"UUID":str(classID)})
+        json_data["preConditions"].append({"type":1,"UUID":str(classID)})
 
-    json_data["digests"] = []
+    json_data["payloadInfo"] = {}
     with open(args["i"], "rb") as f:
         data = f.read()
         image_digest = hashlib.sha256(data).hexdigest()
-    json_data["digests"].append({"URI":args["u"],"digest":image_digest})
+    json_data["payloadInfo"]["format"] = get_format(args["i"])
+    json_data["payloadInfo"]["size"] = os.path.getsize(args["i"])
+    json_data["payloadInfo"]["URLdigest"] = []
+    json_data["payloadInfo"]["URLdigest"].append({"URL":args["u"],"digest":image_digest})
     
     return json_data
+
 
 def validate_input(args):
     if args["f"] is not None and not os.path.isfile(args["f"]):
         print("Could not find manifest.")
-        sys.exit(1)
-    elif args["f"] is not None and pathlib.Path(args["f"]).suffix != ".json":
-        print("Manifest must be a JSON file.")
         sys.exit(1)
 
     if args["i"] is None:
@@ -92,6 +90,7 @@ def validate_input(args):
         print("URI for the image is needed.")
         sys.exit(1)
 
+
 def validate_manifest(filepath):
     with open(filepath, "r") as f:
         try:
@@ -107,12 +106,12 @@ def validate_manifest(filepath):
             sys.exit(1)
 
         try:
-            data["conditions"]
+            data["preConditions"]
         except KeyError:
             print("Manifest is missing vendor and class IDs.")
             sys.exit(1)
 
-        conditions = data["conditions"]
+        conditions = data["preConditions"]
         present_types = []
         for condition in conditions:
             present_types.append(condition["type"])
@@ -122,7 +121,7 @@ def validate_manifest(filepath):
             sys.exit(1)
         elif 0 in present_types:
             try:
-                uuid.UUID(data["conditions"][0]["UUID"])
+                uuid.UUID(data["preConditions"][0]["UUID"])
             except ValueError:
                 print("Manifest is missing vendor ID.")
                 sys.exit(1)
@@ -132,7 +131,7 @@ def validate_manifest(filepath):
             sys.exit(1)
         elif 1 in present_types:
             try:
-                uuid.UUID(data["conditions"][1]["UUID"])
+                uuid.UUID(data["preConditions"][1]["UUID"])
             except ValueError:
                 print("Manifest is missing class ID.")
                 sys.exit(1)
