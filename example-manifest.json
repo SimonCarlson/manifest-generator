@@ -1,9 +1,7 @@
 {
     "versionID": 1,
     "sequenceNumber": 1,
-    "format": 0,
-    "size": 512,
-    "conditions": [
+    "preConditions": [
         {
             "type": 0,
             "UUID": "74738ff5-5367-5958-9aee-98fffdcd1876"
@@ -13,22 +11,18 @@
             "UUID": "28718ff5-9302-8217-7ccc-14aefbcd1276"
         }
     ],
-    "digests": [
-        {
-            "URI": "coap://fake.uri/image",
-            "digest": "b924842b4f42ecf3301985"
+    "postConditions": [],
+    "contentKeyMethod": 0,
+    "payloadInfo": {
+        "format": 0,
+        "size": 512,
+        "storage": 0,
+        "URLdigest": {
+            "URL": "coaps://fake-url",
+            "digest": "6b6bf0bce018a46a263151f7f662c2f94125f39ba68b48160ee222853201a863"
         }
-    ],
-    "options": [
-        {
-            "delta": 4,
-            "length": 1,
-            "value": 0
-        },
-        {
-            "delta": 6,
-            "length": 10,
-            "value": 1548683522
-        }
-    ]
+    },
+    "precursorImage": {},
+    "dependencies": {},
+    "options": {}
 }
