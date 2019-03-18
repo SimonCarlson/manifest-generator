@@ -51,6 +51,9 @@ def generate_json(args, file=None):
         classID = uuid.uuid5(vendorID, args["c"])
         json_data["preConditions"].append({"type":1,"UUID":str(classID)})
 
+    json_data["postConditions"] = []
+    json_data["contentKeyMethod"] = 0
+
     json_data["payloadInfo"] = {}
     with open(args["i"], "rb") as f:
         data = f.read()
@@ -59,6 +62,10 @@ def generate_json(args, file=None):
     json_data["payloadInfo"]["size"] = os.path.getsize(args["i"])
     json_data["payloadInfo"]["URLdigest"] = []
     json_data["payloadInfo"]["URLdigest"].append({"URL":args["u"],"digest":image_digest})
+
+    json_data["precursorImage"] = [{}]
+    json_data["dependencies"] = [{}]
+    json_data["options"] = [{}]
     
     return json_data
 
