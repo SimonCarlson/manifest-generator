@@ -27,13 +27,12 @@ def generate_json(args, file=None):
             # Copy existing preConditions as the manifest targets same device
             for entry in f["preConditions"]:
                 preConditions.append(entry)
-    
-    if file is None:
+    elif file is None:
         json_data["0"] = args["m"]
 
     timestamp = time.time()
     timestamp = str(timestamp).split(".")[0]
-    json_data["1"] = timestamp
+    json_data["1"] = int(timestamp)
 
     json_data["2"] = preConditions
     present_preconditions = []
