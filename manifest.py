@@ -63,9 +63,9 @@ def generate_json(args, file=None):
     json_data["5"]["3"] = []
     json_data["5"]["3"].append({"0":args["u"],"1":image_digest})
 
-    json_data["6"] = [{}]
-    json_data["7"] = [{}]
-    json_data["8"] = [{}]
+    json_data["6"] = []
+    json_data["7"] = []
+    json_data["8"] = []
     
     return json_data
 
