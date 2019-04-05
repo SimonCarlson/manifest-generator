@@ -1,13 +1,22 @@
-A manifest generator.
+A manifest generator. The generator calculates the size and checksum of the given image,
+creates a monotonically increasing sequence number based on POSIX timestamps, generates
+UUIDs for vendor and class IDs, and structures the manifest accordingly. The output is encoded as JSON and CBOR for diagnostic purposes. Developed on Python 3.7.1.
 
 ## Usage
 
-The name of the outfile is always needed, as well as the -i and -u flags for image file and URI. 
+### Parameters
+The name of the outfile is always needed.
 
-An existing manifest can be specified via the -f flag. This will copy the manifest
-version, vendor ID, and class ID to the new manifest. If no existing manifest is
-specified, these values need to be added through the -m, -v, and -c flags.
+### Flags
+-m: manifest version
 
-In either case the generator calculates the size and checksum of the given image, creates
-a monotonically increasing sequence number and structures the manifest accordingly. The
-output is encoded as json and cbor for diagnostic purposes.
+-i: image file
+
+-v: vendor namespace
+
+-c: class namespace
+
+-u: URI
+
+-f: existing manifest to pull version, vendor and class namespaces from (no need for -m,
+-v, -c flags) (optional)
